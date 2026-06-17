@@ -1,0 +1,20 @@
+# Credentials / secrets
+kaggle.json
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Data (regenerated from source URL on run)
+data/
+*.csv
+
+# Saved models
+models/*.joblib
+
+# Misc
+*.log
+.DS_Store

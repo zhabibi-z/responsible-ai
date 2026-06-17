@@ -1,0 +1,24 @@
+# Pinned versions from the notebook's installation cell (Section 1.1)
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.4.1
+xgboost==2.0.3
+shap==0.45.0
+lime==0.2.0.1
+fairlearn==0.10.0
+matplotlib==3.8.3
+seaborn==0.13.2
+kaggle==1.6.14
+
+# Imported by the notebook but not pinned in the install cell.
+# Versions below are compatible with scikit-learn 1.4.1.
+imbalanced-learn==0.12.3   # imblearn — SMOTE for class imbalance (Section 3.4)
+joblib==1.3.2              # model persistence (Section 4)
+
+# Listed in the install cell for planned monitoring/app sections that are
+# not yet built in the notebook. Kept so the environment matches the cell.
+evidently==0.4.0
+gradio==4.20.0
+
+# Note: google.colab (userdata) is used only for the optional Kaggle data
+# path and is provided by the Colab runtime, so it is not listed here.
