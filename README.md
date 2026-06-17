@@ -23,8 +23,8 @@ The notebook runs as an ordered pipeline:
 
 The notebook's closing summary references a NIST AI RMF scoring section, a model card, production monitoring, and a system-design write-up. Those sections are **not present in the executed notebook** (it goes from the fairness audit straight to the executive summary). `evidently` and `gradio` appear in the install cell but are never imported or run, so there are no monitoring reports or app in this repo yet.
 
+- [x] Model card — see [MODEL_CARD.md](MODEL_CARD.md)
 - [ ] TODO: NIST AI RMF scoring section
-- [ ] TODO: model card
 - [ ] TODO: monitoring (Evidently) reports in `reports/`
 - [ ] TODO: system-design section / Gradio app
 
@@ -67,6 +67,7 @@ Python, pandas, NumPy, scikit-learn, XGBoost, imbalanced-learn (SMOTE), SHAP, LI
 ```
 responsible-ai/
 ├── README.md
+├── MODEL_CARD.md
 ├── requirements.txt
 ├── .gitignore
 ├── LICENSE
