@@ -19,14 +19,14 @@ The notebook runs as an ordered pipeline:
 5. **Test-set evaluation** — all four models re-scored on the held-out test set.
 6. **Fairness audit (Fairlearn)** — per-group metrics across `sex`, `region`, and `smoker`, followed by a `ThresholdOptimizer` mitigation pass on `sex`.
 
-### Not yet built
+### Project Completion Status
 
-The notebook's closing summary references a NIST AI RMF scoring section, a model card, production monitoring, and a system-design write-up. Those sections are **not present in the executed notebook** (it goes from the fairness audit straight to the executive summary). `evidently` and `gradio` appear in the install cell but are never imported or run, so there are no monitoring reports or app in this repo yet.
+All major sections have been implemented:
 
-- [x] Model card — see [MODEL_CARD.md](MODEL_CARD.md)
-- [ ] TODO: NIST AI RMF scoring section
-- [ ] TODO: monitoring (Evidently) reports in `reports/`
-- [ ] TODO: system-design section / Gradio app
+- [x] **Model card** — see [MODEL_CARD.md](MODEL_CARD.md)
+- [x] **NIST AI RMF scoring section** — Section 7 in notebook with maturity assessment across core functions and seven trustworthiness characteristics
+- [x] **Monitoring infrastructure** — Evidently AI integration in Section 8; standalone monitoring script: `python monitoring.py`
+- [x] **System design & Gradio app** — Section 9 in notebook; interactive application: `python app.py`
 
 ## Key results
 
@@ -50,7 +50,7 @@ These are read from the per-group selection-rate tables in the notebook. Selecti
 **Sex — small gap, partially reduced.**
 - Baseline selection rate: female 0.398 vs male 0.443 → a 4.4-point gap (demographic-parity ratio ≈ 0.90).
 - Recall was nearly equal across sex at baseline (female 0.879, male 0.881).
-- After `ThresholdOptimizer` (equalized-odds constraint on `sex`): female 0.414 vs male 0.443 → gap narrows to 2.9 points (ratio ≈ 0.94). The gap shrank but did not close. Overall accuracy fell from 0.933 to 0.925 and F1 from 0.924 to 0.917 — the usual fairness/accuracy trade-off.
+- After `ThresholdOptimizer` (equalized-odds constraint on `sex`): female 0.398 vs male 0.436 → gap narrows to 3.7 points (demographic-parity ratio ≈ 0.91; equalized-odds ratio 0.0 → 0.52). The gap shrank but did not close. Overall accuracy fell from 0.933 to 0.929 and F1 from 0.924 to 0.920 — the usual fairness/accuracy trade-off. The mitigation is an analysis step and is not wired into the served model.
 
 **Region — not mitigated.** Baseline selection rates ranged from 0.377 (northwest) to 0.481 (northeast), about a 10-point spread (ratio ≈ 0.78). No mitigation was applied to `region`, so this disparity remains in the final model.
 
@@ -73,13 +73,14 @@ responsible-ai/
 ├── LICENSE
 ├── notebooks/
 │   └── responsible_ai_underwriting.ipynb
-└── reports/                # for monitoring HTML output (none generated yet)
+└── reports/                # Evidently HTML reports written by the notebook and monitoring.py
 ```
 
-The notebook is committed with its executed outputs (charts, tables) intact.
+The notebook is committed with its executed outputs (charts, tables) intact. Running the notebook or `monitoring.py` writes the Evidently HTML reports into `reports/`.
 
 ## How to run
 
+### Main Notebook (Complete Analysis)
 ```bash
 git clone https://github.com/zhabibi-z/responsible-ai.git
 cd responsible-ai
@@ -87,11 +88,39 @@ pip install -r requirements.txt
 jupyter notebook notebooks/responsible_ai_underwriting.ipynb
 ```
 
+The notebook includes:
+- Sections 1-6: Core ML pipeline (data → training → fairness audit)
+- **Section 7:** NIST AI RMF evaluation with maturity scores
+- **Section 8:** Evidently AI monitoring setup
+- **Section 9:** System design & Gradio app code
+- Section 11: Executive summary & recommendations
+
+### Generate Monitoring Reports
+```bash
+python monitoring.py
+```
+Reads the same insurance dataset, reproduces the train/test feature split, and writes Evidently reports to `reports/`:
+- `monitoring_data_summary.html` — column statistics for train vs test
+- `monitoring_data_drift.html` — feature drift, test set vs training reference (baseline)
+- `monitoring_data_drift_alarm.html` — drift under a shifted (ageing, higher-BMI) test population
+
+The notebook's Section 8 writes the same kind of reports under the names `data_summary_report.html`, `data_drift_report.html`, and `data_drift_alarm_report.html`. Open any HTML file in a web browser to view detailed findings.
+
+### Launch Interactive Application
+```bash
+python app.py
+```
+Opens Gradio interface at `http://localhost:7860` with:
+- **Make Prediction** — Input applicant features, get risk score + fairness context
+- **Model Information** — Performance metrics, fairness analysis, limitations
+- **Feature Guide** — Interpretation of each input feature
+- **System Architecture** — Technical design, deployment, governance
+
 The default configuration uses `DATA_SOURCE="URL"`, which pulls the dataset from a public URL and needs **no Kaggle credentials**. To use the Kaggle source instead, set `DATA_SOURCE="KAGGLE"` and provide `KAGGLE_USERNAME` / `KAGGLE_KEY` (the notebook reads them from Colab secrets, not from a committed file).
 
 ## Responsible AI framing
 
-The work is organized around the NIST AI Risk Management Framework's idea of building governance into the model lifecycle — explainability and a fairness audit are run as named pipeline stages, not bolted on at the end. (A formal section that scores the project against the RMF functions is listed above as a TODO.)
+The work is organized around the NIST AI Risk Management Framework's idea of building governance into the model lifecycle — explainability and a fairness audit are run as named pipeline stages, not bolted on at the end. Section 7 of the notebook scores the project against the RMF core functions and the seven trustworthiness characteristics, with each justification pointing to a section that ran and a gap plus remediation for each.
 
 One legal nuance drives the fairness reading. `smoker` status is a legitimate, widely accepted actuarial rating factor, so the large smoker/non-smoker gap is expected and defensible. Sex-based pricing, by contrast, is restricted or prohibited in many jurisdictions, which is why the mitigation pass targets `sex` specifically — and why the residual sex gap matters even though it is small. Geographic (`region`) rating is permitted in some lines and restricted in others; that disparity is measured here but not resolved, and would need a jurisdiction-specific decision before deployment.
 

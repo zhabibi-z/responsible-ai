@@ -45,17 +45,20 @@ Evaluated with Fairlearn across `sex`, `region`, and `smoker`. "Selection rate" 
 
 | Attribute | Finding | Status |
 |---|---|---|
-| **Sex** | Baseline selection rate female 0.398 vs male 0.443 (4.4-pt gap, parity ratio ≈ 0.90); recall near-equal (0.879 / 0.881). After `ThresholdOptimizer` with an equalized-odds constraint: female 0.414 vs male 0.443 (2.9-pt gap, ratio ≈ 0.94). | Reduced, not eliminated. Overall accuracy fell 0.933 → 0.925, F1 0.924 → 0.917. |
+| **Sex** | Baseline selection rate female 0.398 vs male 0.443 (4.4-pt gap, parity ratio ≈ 0.90); recall near-equal (0.879 / 0.881). After `ThresholdOptimizer` with an equalized-odds constraint: female 0.398 vs male 0.436 (3.7-pt gap, parity ratio ≈ 0.91; equalized-odds ratio 0.0 → 0.52). | Reduced, not eliminated. Overall accuracy fell 0.933 → 0.929, F1 0.924 → 0.920. Analysis only — not applied in the served model. |
 | **Region** | Selection rate ranges 0.377 (northwest) to 0.481 (northeast), ~10-pt spread (ratio ≈ 0.78). | Measured, **not mitigated**. |
 | **Smoker** | All test-set smokers predicted "Bad Risk" (selection rate 1.00) vs 0.272 for non-smokers. | **Left in place by design** — smoking is a recognized actuarial factor. |
 
 ## Ethical considerations and limitations
 
-- **Legal context drives the fairness reading.** Smoker-based differentiation is a widely accepted actuarial rating factor, so the large smoker gap is expected and defensible. Sex-based pricing is restricted or prohibited in many jurisdictions, which is why mitigation targets `sex` — and why the residual 2.9-point sex gap still matters. Region rating varies by jurisdiction and line of business; that disparity is unresolved here and would need a jurisdiction-specific decision before any real use.
-- **Fairness/accuracy trade-off** is explicit: mitigating the sex gap cost ~0.7 points of accuracy.
+- **Legal context drives the fairness reading.** Smoker-based differentiation is a widely accepted actuarial rating factor, so the large smoker gap is expected and defensible. Sex-based pricing is restricted or prohibited in many jurisdictions, which is why mitigation targets `sex` — and why the residual 3.7-point sex gap still matters. Region rating varies by jurisdiction and line of business; that disparity is unresolved here and would need a jurisdiction-specific decision before any real use.
+- **Fairness/accuracy trade-off** is explicit: mitigating the sex gap cost ~0.4 points of accuracy (0.933 → 0.929).
 - **Small, non-representative data.** ~1,338 records from one public dataset; no claim of generalization.
 - **Synthetic target.** The "Bad Risk" label is a thresholded proxy for cost, not a real underwriting outcome.
 
 ## Caveats and next steps
 
-The notebook does not yet include a NIST AI RMF scoring section or production monitoring (drift) reports; those are tracked as TODOs in the [README](README.md). Region-level disparity is measured but not addressed.
+- The notebook now includes a NIST AI RMF mapping (Section 7), Evidently data-summary and drift reports (Section 8), and a Gradio interface backed by the saved model with an out-of-distribution check (Section 9). The standalone `monitoring.py` regenerates the drift reports from the same dataset.
+- Region-level disparity is measured but not addressed; a region policy decision is needed before any real use.
+- The served model is the unmitigated calibrated XGBoost; the sex mitigation exists only as a separate analysis step.
+- No privacy or access controls are in place. Add authentication and a PII policy before using real applicant data.
