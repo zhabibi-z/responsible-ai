@@ -1,7 +1,10 @@
 # Compatible with Python 3.14+
 numpy>=2.4
 pandas>=3.0
-scikit-learn>=1.6
+# Pinned: the committed model/preprocessor pickles were trained on 1.9.0;
+# loading them under a different scikit-learn can break or warn. Keep this in
+# sync with hf_space/requirements.txt.
+scikit-learn==1.9.0
 xgboost>=2.1
 shap>=0.46
 lime>=0.2.0
