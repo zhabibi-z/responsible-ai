@@ -152,15 +152,15 @@ def get_model_info():
 | Logistic Regression | 84.4% | 85.6% | 90.4% | 87.9% | 93.8% |
 | Decision Tree | 92.5% | 97.3% | 86.4% | 91.5% | 90.5% |
 | XGBoost (uncalibrated) | 93.3% | 97.3% | 88.0% | 92.4% | 93.4% |
-| **Calibrated XGBoost** | **93.3%** | **97.3%** | **88.0%** | **92.4%** | **0.939%** |
+| **Calibrated XGBoost** | **93.3%** | **97.3%** | **88.0%** | **92.4%** | **93.9%** |
 
 ## Fairness Analysis
 
 ### Sex
 - **Baseline gap:** Female 39.8% vs Male 44.3% (4.4-point difference, parity ratio ≈ 0.90)
-- **Post-mitigation:** Female 41.4% vs Male 44.3% (2.9-point difference, ratio ≈ 0.94)
-- **Mitigation method:** ThresholdOptimizer with equalized-odds constraint
-- **Trade-off:** Accuracy 93.3% → 92.5%; F1 92.4% → 91.7%
+- **Post-mitigation:** Female 39.8% vs Male 43.6% (3.7-point difference, ratio ≈ 0.91)
+- **Mitigation method:** ThresholdOptimizer with equalized-odds constraint (equalized-odds ratio 0.0 → 0.52)
+- **Trade-off:** Accuracy 93.3% → 92.9%; F1 92.4% → 92.0%
 - **Status:** Gap reduced but not eliminated; requires ongoing monitoring
 
 ### Region
@@ -245,7 +245,7 @@ This guide explains each feature in the model and how to interpret them.
 **Important Note:**
 - Model exhibits sex-based bias (females slightly lower selection rate at baseline)
 - This bias is **intentionally reduced** through fairness mitigation
-- **2.9-point gap remains** and requires ongoing monitoring
+- **3.7-point gap remains** and requires ongoing monitoring
 - Never use sex as sole basis for denial; must combine with other factors
 
 **Regulatory Context:**
@@ -507,7 +507,7 @@ OUTPUT LAYER
 
 - **Mitigation applied:** ThresholdOptimizer on sex (equalized odds)
 - **Result:** Sex gap reduced from 4.4pt to 3.7pt
-- **Trade-off:** Accuracy 93.3% → 92.5% (acceptable)
+- **Trade-off:** Accuracy 93.3% → 92.9% (acceptable)
 
 ### 5. Monitoring Architecture
 
