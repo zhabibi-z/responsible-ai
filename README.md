@@ -71,12 +71,21 @@ responsible-ai/
 ├── requirements.txt
 ├── .gitignore
 ├── LICENSE
+├── app.py                  # Local Gradio launcher
+├── underwriting_demo.py    # Shared UI + inference logic (used by both launchers)
+├── monitoring.py           # Standalone Evidently monitoring script
 ├── notebooks/
-│   └── responsible_ai_underwriting.ipynb
+│   ├── responsible_ai_underwriting.ipynb
+│   └── models/             # Trained model + preprocessor (committed)
+├── hf_space/               # Self-contained Hugging Face Space
+│   ├── app.py              # Space launcher (imports underwriting_demo.py)
+│   ├── README.md
+│   ├── requirements.txt
+│   └── models/             # Copy of the artifacts the Space serves
 └── reports/                # Evidently HTML reports written by the notebook and monitoring.py
 ```
 
-The notebook is committed with its executed outputs (charts, tables) intact. Running the notebook or `monitoring.py` writes the Evidently HTML reports into `reports/`.
+The notebook is committed with its executed outputs (charts, tables) intact. The trained model and preprocessor are committed under `notebooks/models/` (and `hf_space/models/`) so `app.py` and the Hugging Face Space run without re-executing the notebook. Running the notebook or `monitoring.py` writes the Evidently HTML reports into `reports/`.
 
 ## How to run
 

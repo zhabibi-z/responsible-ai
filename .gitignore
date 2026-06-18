@@ -7,13 +7,15 @@ kaggle.json
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+venv/
 
 # Data (regenerated from source URL on run)
 data/
 *.csv
 
-# Saved models
-models/*.joblib
+# Note: trained models (notebooks/models/, hf_space/models/) and Evidently
+# reports (reports/*.html) are intentionally committed so the app and the
+# Hugging Face Space run without re-executing the notebook.
 
 # Misc
 *.log
