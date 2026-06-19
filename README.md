@@ -32,7 +32,7 @@ All major sections have been implemented:
 
 ### Best model (held-out test set)
 
-The calibrated XGBoost model was selected. XGBoost and calibrated XGBoost tie on the headline classification metrics; calibration was preferred for more reliable probability estimates. Test-set numbers:
+The calibrated XGBoost model was selected. XGBoost and calibrated XGBoost tie on the headline classification metrics; calibration was preferred for more reliable probability estimates — and the evidence backs it: on the test set, calibration cut Expected Calibration Error from 0.048 to 0.027 and the Brier score from 0.0599 to 0.0583 (reliability diagram in [reports/calibration_reliability.png](reports/calibration_reliability.png), reproduced by [evaluate.py](evaluate.py)). Test-set numbers:
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
 |---|---|---|---|---|---|
@@ -43,20 +43,34 @@ The calibrated XGBoost model was selected. XGBoost and calibrated XGBoost tie on
 
 Read plainly: the chosen model gets about 93% of test cases right, and when it labels an applicant "Bad Risk" it is correct about 97% of the time (precision), while catching 88% of the actual bad-risk cases (recall).
 
-### Fairness findings (Section 6, calibrated XGBoost, test set)
+### Fairness findings (calibrated XGBoost, test set)
 
-These are read from the per-group selection-rate tables in the notebook. Selection rate = the share of a group predicted "Bad Risk."
+Selection rate = the share of a group predicted "Bad Risk." Because the per-group
+samples are small (e.g. 55 smokers), demographic-parity ratios (DPR) are reported
+with percentile bootstrap 95% CIs from [evaluate.py](evaluate.py) — the CI, not the
+point estimate, is what tells you whether a gap is real.
 
-**Sex — small gap, partially reduced.**
-- Baseline selection rate: female 0.398 vs male 0.443 → a 4.4-point gap (demographic-parity ratio ≈ 0.90).
-- Recall was nearly equal across sex at baseline (female 0.879, male 0.881).
-- After `ThresholdOptimizer` (equalized-odds constraint on `sex`): female 0.398 vs male 0.436 → gap narrows to 3.7 points (demographic-parity ratio ≈ 0.91; equalized-odds ratio 0.0 → 0.52). The gap shrank but did not close. Overall accuracy fell from 0.933 to 0.929 and F1 from 0.924 to 0.920 — the usual fairness/accuracy trade-off. The mitigation is an analysis step and is not wired into the served model.
+| Attribute | Baseline selection rate | DPR (95% CI) | Robust? |
+|---|---|---|---|
+| **Sex** | female 0.398 / male 0.443 (4.4-pt gap) | 0.90 **[0.67, 0.99]** | **No** — CI reaches parity |
+| **Region** | 0.377 (NW) → 0.481 (NE), ~10-pt spread | 0.78 **[0.50, 0.90]** | **Yes** — CI below 1.0 |
+| **Smoker** | non-smoker 0.272 / smoker 1.00 | 0.27 **[0.22, 0.33]** | **Yes** — large, by design |
 
-**Region — not mitigated.** Baseline selection rates ranged from 0.377 (northwest) to 0.481 (northeast), about a 10-point spread (ratio ≈ 0.78). No mitigation was applied to `region`, so this disparity remains in the final model.
+**Sex mitigation does not transfer (and the original "win" was leakage).** The
+notebook fit Fairlearn's `ThresholdOptimizer` on the *test* set and scored it on
+that same set, which leaks and reported a gap reduction 4.4 → 3.7 pt (equalized-odds
+ratio 0.0 → 0.52). Redone correctly in [evaluate.py](evaluate.py) — fit on the
+**validation** fold, evaluated on the held-out **test** fold — the mitigation leaves
+everything essentially unchanged: gap 4.4 → 4.5 pt, DPR 0.90 → 0.90, equalized-odds
+ratio 0.0 → 0.0, accuracy and F1 flat at 0.933 / 0.924. This is exactly what the wide
+sex DPR CI predicts: there is no statistically robust sex gap for a post-hoc threshold
+(tuned on ~110 validation records per group) to fix.
 
-**Smoker — large gap, left in place by design.** Every smoker in the test set was predicted "Bad Risk" (selection rate 1.00) versus 0.272 for non-smokers. This is the strongest signal in the data and is left unmitigated: smoking is a recognized actuarial risk factor (see the framing note below).
-
-Bottom line: bias was reduced on `sex` but not eliminated, `region` disparity was measured but not addressed, and the `smoker` gap is intentional and defensible. The audit surfaces these honestly rather than claiming the model is "fair."
+Bottom line: **`region` is the one robust disparity** (and it is measured but not
+mitigated, pending a jurisdiction policy decision); the **`smoker`** gap is large,
+robust, and intentional; and the **`sex`** gap is within sampling noise, so the honest
+conclusion is "not distinguishable from parity here," not "reduced by mitigation." The
+audit surfaces this rather than claiming the model was made "fair."
 
 ## Tech stack
 
@@ -115,6 +129,16 @@ Reads the same insurance dataset, reproduces the train/test feature split, and w
 
 The notebook's Section 8 writes the same kind of reports under the names `data_summary_report.html`, `data_drift_report.html`, and `data_drift_alarm_report.html`. Open any HTML file in a web browser to view detailed findings.
 
+### Reproduce the fairness & calibration evaluation
+```bash
+python evaluate.py
+```
+A deterministic, no-retraining script that loads the committed artifacts,
+reproduces the exact 60/20/20 split, and prints the bootstrap-CI fairness
+tables, the leakage-free mitigation result, and the calibration metrics. It
+writes `reports/evaluation_results.json` and `reports/calibration_reliability.png`.
+Run the smoke tests with `pytest -q`.
+
 ### Launch Interactive Application
 ```bash
 python app.py
@@ -131,7 +155,7 @@ The default configuration uses `DATA_SOURCE="URL"`, which pulls the dataset from
 
 The work is organized around the NIST AI Risk Management Framework's idea of building governance into the model lifecycle — explainability and a fairness audit are run as named pipeline stages, not bolted on at the end. Section 7 of the notebook scores the project against the RMF core functions and the seven trustworthiness characteristics, with each justification pointing to a section that ran and a gap plus remediation for each.
 
-One legal nuance drives the fairness reading. `smoker` status is a legitimate, widely accepted actuarial rating factor, so the large smoker/non-smoker gap is expected and defensible. Sex-based pricing, by contrast, is restricted or prohibited in many jurisdictions, which is why the mitigation pass targets `sex` specifically — and why the residual sex gap matters even though it is small. Geographic (`region`) rating is permitted in some lines and restricted in others; that disparity is measured here but not resolved, and would need a jurisdiction-specific decision before deployment.
+One legal nuance drives the fairness reading. `smoker` status is a legitimate, widely accepted actuarial rating factor, so the large smoker/non-smoker gap is expected and defensible. Sex-based pricing, by contrast, is restricted or prohibited in many jurisdictions, which is why the mitigation pass targets `sex` specifically — but the measured sex gap turns out to be within sampling noise (its DPR confidence interval reaches parity), and a leakage-free `ThresholdOptimizer` pass does not improve it out-of-sample, so the model is not "made fair" on `sex` so much as shown to have no robust sex gap at this sample size. Geographic (`region`) rating is permitted in some lines and restricted in others; that disparity is the statistically robust one here, measured but not resolved, and would need a jurisdiction-specific decision before deployment.
 
 ## License
 

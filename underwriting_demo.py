@@ -80,10 +80,11 @@ def make_predict_fn(model, preprocessor):
 
             if sex == "female":
                 fairness_notes.append(
-                    "Sex: baseline selection-rate gap was 4.4pt (women 39.8% vs men 44.3%). "
-                    "A separate ThresholdOptimizer run narrowed it to 3.7pt but is not applied "
-                    "in this model. Sex-based pricing is restricted in many jurisdictions, so "
-                    "this gap remains important to monitor."
+                    "Sex: baseline selection-rate gap was 4.4pt (women 39.8% vs men 44.3%), "
+                    "but the demographic-parity ratio CI [0.67, 0.99] reaches parity, so this "
+                    "gap is not statistically robust at the test sample size, and a leakage-free "
+                    "ThresholdOptimizer pass did not improve it. Sex-based pricing is restricted "
+                    "in many jurisdictions, so keep monitoring it as data grows."
                 )
 
             if region == "northeast":
@@ -154,28 +155,43 @@ def get_model_info():
 | XGBoost (uncalibrated) | 93.3% | 97.3% | 88.0% | 92.4% | 93.4% |
 | **Calibrated XGBoost** | **93.3%** | **97.3%** | **88.0%** | **92.4%** | **93.9%** |
 
+## Calibration (why the calibrated model was chosen)
+On the test set, isotonic calibration improved probability quality without
+changing the threshold-0.5 classification metrics:
+| Metric | Raw XGBoost | Calibrated | (lower is better) |
+|--------|-------------|------------|-------------------|
+| Expected Calibration Error | 0.048 | **0.027** | ✓ ~44% lower |
+| Brier score | 0.0599 | **0.0583** | ✓ lower |
+
 ## Fairness Analysis
 
-### Sex
-- **Baseline gap:** Female 39.8% vs Male 44.3% (4.4-point difference, parity ratio ≈ 0.90)
-- **Post-mitigation:** Female 39.8% vs Male 43.6% (3.7-point difference, ratio ≈ 0.91)
-- **Mitigation method:** ThresholdOptimizer with equalized-odds constraint (equalized-odds ratio 0.0 → 0.52)
-- **Trade-off:** Accuracy 93.3% → 92.9%; F1 92.4% → 92.0%
-- **Status:** Gap reduced but not eliminated; requires ongoing monitoring
+Per-group samples are small, so demographic-parity ratios (DPR) are reported
+with bootstrap 95% confidence intervals. The interval — not the point estimate —
+is what says whether a gap is real.
 
-### Region
+### Sex — not a statistically robust gap
+- **Baseline:** Female 39.8% vs Male 44.3% (4.4-point difference)
+- **DPR:** 0.90, **95% CI [0.67, 0.99]** — the interval nearly reaches parity (1.0),
+  so the sex gap is **not distinguishable from zero** at this sample size (~130/group)
+- **Mitigation (leakage-free):** ThresholdOptimizer fit on validation, scored on
+  test → gap 4.4pt → 4.5pt, DPR 0.90 → 0.90, equalized-odds 0.0 → 0.0,
+  accuracy/F1 unchanged. **It does not transfer.** (The notebook's earlier
+  "3.7pt / 0.52" figure came from fitting on the test set — leakage.)
+- **Status:** No robust sex disparity to mitigate; keep monitoring as data grows
+
+### Region — the one robust disparity
 - **Selection rates:** 37.7% (northwest) to 48.1% (northeast), ~10-point spread
-- **Parity ratio:** ≈ 0.78 (significant disparity)
+- **DPR:** 0.78, **95% CI [0.50, 0.90]** — upper bound below 1.0, so this gap **is**
+  statistically robust
 - **Mitigation:** Measured but **not applied** (pending jurisdiction policy decision)
 - **Status:** Unresolved; awaiting business decision
 
-### Smoker
+### Smoker — large, robust, intentional
 - **Smoker selection rate:** 100.0% (all smokers predicted "Bad Risk")
 - **Non-smoker selection rate:** 27.2%
-- **Difference:** 72.8 percentage points (largest gap)
+- **DPR:** 0.27, **95% CI [0.22, 0.33]** (tight) — a large, robust gap
 - **Mitigation:** **Left intentional by design**
 - **Rationale:** Smoking is a recognized, defensible actuarial risk factor
-- **Status:** No mitigation applied; acceptable and defensible
 
 ## Monitoring & Governance
 - **Monitoring tool:** Evidently AI (data quality, data drift, model performance)
@@ -240,12 +256,15 @@ This guide explains each feature in the model and how to interpret them.
 **Why it matters:**
 - Proxy for healthcare cost differences (pregnancy, etc.)
 - **⚠️ Fairness concern:** Sex-based pricing restricted in many jurisdictions
-- Model shows bias but mitigation reduced gap from 4.4pt to 3.7pt
+- A 4.4pt baseline selection-rate gap appears, but it is within sampling noise
+  (demographic-parity ratio 0.90, 95% CI [0.67, 0.99] — the interval reaches parity)
 
 **Important Note:**
-- Model exhibits sex-based bias (females slightly lower selection rate at baseline)
-- This bias is **intentionally reduced** through fairness mitigation
-- **3.7-point gap remains** and requires ongoing monitoring
+- The baseline female/male gap (4.4pt) is **not statistically robust** at this
+  sample size (~130 per group)
+- A **leakage-free** ThresholdOptimizer pass did not improve it out-of-sample
+- The notebook's earlier "reduced to 3.7pt" figure was an artifact of fitting the
+  mitigation on the test set, then scoring on that same set
 - Never use sex as sole basis for denial; must combine with other factors
 
 **Regulatory Context:**
@@ -364,8 +383,8 @@ This guide explains each feature in the model and how to interpret them.
 - Northwest region: Lowest baseline risk
 
 ### Yellow Flags (⚠️)
-- Sex: Gap reduced but still present (3.7pt); requires monitoring
-- Female applicant: Slightly lower selection rate (fairness mitigation in place)
+- Sex: 4.4pt baseline gap, but within sampling noise (DPR CI [0.67, 0.99] reaches parity); monitor as data grows
+- Region: the one statistically robust disparity (DPR 0.78, CI [0.50, 0.90]); measured but unmitigated
 - Northeast region: Highest baseline risk; unresolved disparity
 
 ### Red Flags (ℹ️)
@@ -378,7 +397,8 @@ This guide explains each feature in the model and how to interpret them.
 ## Common Misconceptions
 
 ❌ **"The model is completely fair"**
-- No: Fairness gaps remain (sex: 3.7pt, region: 10pt)
+- No: a statistically robust region gap remains (DPR 0.78, CI [0.50, 0.90]); the
+  sex gap is within sampling noise rather than "fixed"
 - Fair AI is an ongoing process, not a final state
 
 ❌ **"The model should always be trusted"**
@@ -505,9 +525,11 @@ OUTPUT LAYER
   - Precision (positive predictive value)
   - Demographic parity ratio
 
-- **Mitigation applied:** ThresholdOptimizer on sex (equalized odds)
-- **Result:** Sex gap reduced from 4.4pt to 3.7pt
-- **Trade-off:** Accuracy 93.3% → 92.9% (acceptable)
+- **Mitigation evaluated:** ThresholdOptimizer on sex (equalized odds), fit on
+  validation and scored on the held-out test set (no leakage)
+- **Result:** No out-of-sample effect — sex gap 4.4pt → 4.5pt, accuracy/F1
+  unchanged; the sex gap is within sampling noise (DPR CI [0.67, 0.99])
+- **Robust disparity:** `region` (DPR 0.78, CI [0.50, 0.90]), measured but not mitigated
 
 ### 5. Monitoring Architecture
 
