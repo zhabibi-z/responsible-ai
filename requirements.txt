@@ -21,5 +21,8 @@ joblib>=1.4
 evidently>=0.4
 gradio>=4.20
 
+# Dev / evaluation tooling.
+pytest>=8.0
+
 # Note: google.colab (userdata) is used only for the optional Kaggle data
 # path and is provided by the Colab runtime, so it is not listed here.
