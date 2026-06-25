@@ -22,5 +22,8 @@ trained in the companion notebook and serves predictions through Gradio.
 
 The model is the unmitigated calibrated XGBoost classifier. It is a learning
 and portfolio demonstration, not a tool for real underwriting decisions: it is
-trained on a small public dataset and has known, documented fairness gaps
-(region disparity unmitigated; sex gap reduced but not closed).
+trained on a small public dataset and has known, documented fairness gaps. The
+robust one is a regional disparity (demographic-parity ratio 0.78, 95% CI
+[0.50, 0.90]), which is measured but unmitigated; the apparent sex gap is within
+sampling noise (DPR CI reaches parity) and post-hoc mitigation does not improve
+it out-of-sample. See the model card and evaluate.py for details.

@@ -6,7 +6,7 @@ A notebook that builds an insurance risk-classification model and then audits it
 
 Predictive underwriting uses a model to estimate an applicant's risk and price or screen policies accordingly. Because those decisions affect access and cost for real people, the model needs more than good accuracy: it has to be explainable to underwriters and regulators, and it has to be checked for disparate treatment across groups such as sex and region. This project treats that checking as part of the deliverable, not an afterthought.
 
-The data is the public medical-cost insurance dataset (~1,338 records; columns: `age`, `sex`, `bmi`, `children`, `smoker`, `region`, `charges`). The continuous `charges` field is converted into a binary target `risk_level`, where charges above $10,000 are labeled "Bad Risk." The model predicts that label.
+The data is the public medical-cost insurance dataset (1,338 records, 1,337 after dropping one duplicate row; columns: `age`, `sex`, `bmi`, `children`, `smoker`, `region`, `charges`). The continuous `charges` field is converted into a binary target `risk_level`, where charges above $10,000 are labeled "Bad Risk." The model predicts that label.
 
 ## What this project does
 

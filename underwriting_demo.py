@@ -126,7 +126,7 @@ def get_model_info():
 
 ## Selected Model
 - **Type:** Calibrated XGBoost (CalibratedClassifierCV wrapper)
-- **Rationale:** Superior probability calibration for reliable confidence estimates
+- **Rationale:** Superior probability calibration for reliable probability estimates
 - **Training Date:** 2026-06-17
 - **Version:** 1.0
 
@@ -311,7 +311,7 @@ This guide explains each feature in the model and how to interpret them.
 **What it is:** Current smoking status
 
 **Why it matters:**
-- **STRONGEST signal in the model** (70% of risk score)
+- **The dominant signal in the model** (top feature by SHAP importance)
 - Smoking dramatically increases healthcare costs
 - Highest disease burden and mortality risk
 
@@ -358,11 +358,6 @@ This guide explains each feature in the model and how to interpret them.
 - **"Good Risk":** Predicted charges likely below $10,000/year
 - **"Bad Risk":** Predicted charges likely above $10,000/year
 
-### Confidence
-- Higher confidence = model more certain about prediction
-- 95% confidence: Model very sure
-- 51% confidence: Model barely confident (borderline case)
-
 ### Probability Scores
 - **Probability (Bad Risk):** Likelihood of "Bad Risk" classification
 - **Probability (Good Risk):** Likelihood of "Good Risk" classification
@@ -387,7 +382,7 @@ This guide explains each feature in the model and how to interpret them.
 - Region: the one statistically robust disparity (DPR 0.78, CI [0.50, 0.90]); measured but unmitigated
 - Northeast region: Highest baseline risk; unresolved disparity
 
-### Red Flags (ℹ️)
+### Red Flags (🚩)
 - Region disparities: Measured but awaiting policy decision
 - Use other factors in addition to geographic region for underwriting decisions
 - Consider applicant circumstances holistically
@@ -449,7 +444,7 @@ INPUT LAYER
 
 ML LAYER
 ├── Model: Calibrated XGBoost (CalibratedClassifierCV)
-├── Inference: Prediction + Confidence Probability
+├── Inference: Calibrated probability + binary class
 └── Output: Binary class + calibrated probability
 
 EXPLAINABILITY LAYER
@@ -477,7 +472,7 @@ MONITORING LAYER
 └── Alerting: Automated notifications for issues
 
 OUTPUT LAYER
-├── Prediction: Risk classification + confidence
+├── Prediction: Risk classification + calibrated probability
 ├── Explainability: Feature contributions, local explanations
 ├── Fairness Context: Group-specific metrics and caveats
 └── Audit Record: Timestamp, features, decision, rationale
@@ -706,7 +701,7 @@ def build_demo(model, preprocessor):
         An interactive application demonstrating responsible AI practices in predictive underwriting.
 
         **Features:**
-        - ✅ **Prediction & Confidence:** Risk classification with probability estimates
+        - ✅ **Prediction & Probability:** Risk classification with calibrated probability estimates
         - 🎯 **Fairness Awareness:** Bias metrics and demographic context
         - 📊 **Transparency:** Model information and explainability guide
         - 🏗️ **Architecture:** System design and governance framework
@@ -719,9 +714,8 @@ def build_demo(model, preprocessor):
 
             The model will provide:
             1. Risk classification (Good Risk / Bad Risk)
-            2. Confidence score
-            3. Probability estimates
-            4. Fairness & demographic context
+            2. Calibrated probability estimates
+            3. Fairness & demographic context
             """)
 
             with gr.Row():
@@ -779,7 +773,7 @@ def build_demo(model, preprocessor):
             gr.Markdown("""
             ---
             **How to interpret results:**
-            - Look at the "Prediction" and "Confidence" scores
+            - Look at the "Prediction" and the "Probability (Bad Risk)" score
             - Read the "Fairness & Context" section for demographic details
             - Use the Feature Guide tab to understand feature importance
             - Remember: Model is a tool to inform decisions, not replace human judgment
