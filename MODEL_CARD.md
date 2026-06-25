@@ -19,7 +19,7 @@ This card follows the structure popularized by Mitchell et al., *Model Cards for
 
 ## Training data
 
-- **Source:** The public medical-cost insurance dataset (~1,338 records), loaded by default from a public URL; an optional Kaggle path exists.
+- **Source:** The public medical-cost insurance dataset (1,338 records, 1,337 after dropping one duplicate row), loaded by default from a public URL; an optional Kaggle path exists.
 - **Target construction:** The continuous `charges` column is binarized into `risk_level` — `charges > $10,000` → "Bad Risk." This $10,000 threshold is a modeling choice, not an industry standard.
 - **Splits:** 60% train / 20% validation / 20% test, stratified. The test set holds 268 records.
 - **Class imbalance:** Addressed on the training fold only, using SMOTE.
