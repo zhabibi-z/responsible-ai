@@ -116,7 +116,7 @@ The notebook includes:
 - **Section 7:** NIST AI RMF evaluation with maturity scores
 - **Section 8:** Evidently AI monitoring setup
 - **Section 9:** System design & Gradio app code
-- Section 11: Executive summary & recommendations
+- Section 11: Executive summary & further recommendations
 
 ### Generate Monitoring Reports
 ```bash
