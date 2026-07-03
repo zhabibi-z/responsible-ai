@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Zia Habibi
+# SPDX-License-Identifier: MIT
 """Offline smoke tests for the underwriting project.
 
 These run without network access or retraining: they exercise the served

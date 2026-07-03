@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2026 Zia Habibi
+# SPDX-License-Identifier: MIT
 """
 Shared Gradio UI and inference logic for the underwriting demo.
 

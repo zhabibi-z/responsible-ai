@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2026 Zia Habibi
+# SPDX-License-Identifier: MIT
 """Evidently monitoring for the Responsible AI underwriting project.
 
 Reads the same insurance dataset the notebook uses, reproduces the train/test

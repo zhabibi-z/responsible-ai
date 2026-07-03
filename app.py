@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2026 Zia Habibi
+# SPDX-License-Identifier: MIT
 """
 Interactive Gradio Application for Responsible AI Predictive Underwriting
 

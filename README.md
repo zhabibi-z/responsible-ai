@@ -22,6 +22,17 @@ license: mit
 
 A notebook that builds an insurance risk-classification model and then audits it for transparency and fairness, rather than stopping at accuracy.
 
+## Contents
+
+- [Problem](#problem)
+- [What this project does](#what-this-project-does)
+- [Key results](#key-results)
+- [Tech stack](#tech-stack)
+- [Repository structure](#repository-structure)
+- [How to run](#how-to-run)
+- [Responsible AI framing](#responsible-ai-framing)
+- [License](#license)
+
 ## Problem
 
 Predictive underwriting uses a model to estimate an applicant's risk and price or screen policies accordingly. Because those decisions affect access and cost for real people, the model needs more than good accuracy: it has to be explainable to underwriters and regulators, and it has to be checked for disparate treatment across groups such as sex and region. This project treats that checking as part of the deliverable, not an afterthought.
