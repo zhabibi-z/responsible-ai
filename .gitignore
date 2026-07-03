@@ -9,6 +9,12 @@ __pycache__/
 .ipynb_checkpoints/
 venv/
 
+# Tooling caches / editor
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+
 # Data (regenerated from source URL on run)
 data/
 *.csv
