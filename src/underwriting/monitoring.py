@@ -34,9 +34,11 @@ VAL_SIZE = 0.25
 NUMERICAL = ["age", "bmi", "children"]
 CATEGORICAL = ["sex", "smoker", "region"]
 FEATURES = NUMERICAL + CATEGORICAL
-REPORTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
+# This module lives at src/underwriting/, so the repo root is two levels up.
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+REPORTS_DIR = os.path.join(_ROOT, "reports")
 # The notebook runs from notebooks/ and saves artifacts under notebooks/models.
-MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "notebooks", "models")
+MODELS_DIR = os.path.join(_ROOT, "notebooks", "models")
 
 
 def load_feature_frames():

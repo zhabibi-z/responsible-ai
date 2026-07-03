@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "responsible-underwriting"
+version = "1.0.0"
+description = "Responsible AI predictive underwriting: explainability, fairness audit, and monitoring."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+# Runtime/dev dependencies are pinned in requirements.txt (also what the
+# Hugging Face Space installs). Install the package for development with
+# `pip install -e .` after `pip install -r requirements.txt`.
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

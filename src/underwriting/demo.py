@@ -2,14 +2,10 @@
 """
 Shared Gradio UI and inference logic for the Responsible AI underwriting demo.
 
-Both entry points import from this module:
-- app.py            (repo root; local development, searches notebooks/models)
-- hf_space/app.py   (Hugging Face Space; serves the same interface)
-
-They differ only in which directories they search for the model artifacts and
-in how they launch the server. Everything else — the prediction path, the
-fairness context, and the documentation tabs — lives here so the two stay in
-sync.
+The repo-root app.py imports from this module for both local runs and the
+Hugging Face Space. It resolves the model path and launches the server;
+everything else — the prediction path, the fairness context, and the
+documentation tabs — lives here.
 """
 
 import os

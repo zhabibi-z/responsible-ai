@@ -66,9 +66,10 @@ NUMERICAL = ["age", "bmi", "children"]
 CATEGORICAL = ["sex", "smoker", "region"]
 FEATURES = NUMERICAL + CATEGORICAL
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-MODELS_DIR = os.path.join(_HERE, "notebooks", "models")
-REPORTS_DIR = os.path.join(_HERE, "reports")
+# This module lives at src/underwriting/, so the repo root is two levels up.
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+MODELS_DIR = os.path.join(_ROOT, "notebooks", "models")
+REPORTS_DIR = os.path.join(_ROOT, "reports")
 
 
 # --- Data --------------------------------------------------------------------

@@ -13,10 +13,18 @@ venv/
 data/
 *.csv
 
-# Note: trained models (notebooks/models/, hf_space/models/) and Evidently
-# reports (reports/*.html) are intentionally committed so the app and the
-# Hugging Face Space run without re-executing the notebook.
+# Note: trained models (notebooks/models/) and Evidently reports (reports/*.html)
+# are intentionally committed so the app and the Hugging Face Space run without
+# re-executing the notebook.
+
+# Packaging
+*.egg-info/
+build/
+dist/
 
 # Misc
 *.log
 .DS_Store
+
+# Local Claude Code settings
+.claude/

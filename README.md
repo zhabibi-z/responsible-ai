@@ -1,3 +1,19 @@
+<!--
+Hugging Face Space front matter. GitHub renders this block as a small table;
+the Space reads it to know the SDK and entry point. app_file points at the
+repo-root app.py, which loads the shared code from src/underwriting/.
+-->
+---
+title: Responsible AI Predictive Underwriting
+emoji: 📊
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # Responsible AI for Predictive Underwriting
 
 A notebook that builds an insurance risk-classification model and then audits it for transparency and fairness, rather than stopping at accuracy.
@@ -25,14 +41,14 @@ All major sections have been implemented:
 
 - [x] **Model card** — see [MODEL_CARD.md](MODEL_CARD.md)
 - [x] **NIST AI RMF scoring section** — Section 7 in notebook with maturity assessment across core functions and seven trustworthiness characteristics
-- [x] **Monitoring infrastructure** — Evidently AI integration in Section 8; standalone monitoring script: `python monitoring.py`
+- [x] **Monitoring infrastructure** — Evidently AI integration in Section 8; standalone monitoring script: `python src/underwriting/monitoring.py`
 - [x] **System design & Gradio app** — Section 9 in notebook; interactive application: `python app.py`
 
 ## Key results
 
 ### Best model (held-out test set)
 
-The calibrated XGBoost model was selected. XGBoost and calibrated XGBoost tie on the headline classification metrics; calibration was preferred for more reliable probability estimates — and the evidence backs it: on the test set, calibration cut Expected Calibration Error from 0.048 to 0.027 and the Brier score from 0.0599 to 0.0583 (reliability diagram in [reports/calibration_reliability.png](reports/calibration_reliability.png), reproduced by [evaluate.py](evaluate.py)). Test-set numbers:
+The calibrated XGBoost model was selected. XGBoost and calibrated XGBoost tie on the headline classification metrics; calibration was preferred for more reliable probability estimates — and the evidence backs it: on the test set, calibration cut Expected Calibration Error from 0.048 to 0.027 and the Brier score from 0.0599 to 0.0583 (reliability diagram in [reports/calibration_reliability.png](reports/calibration_reliability.png), reproduced by [evaluate.py](src/underwriting/evaluate.py)). Test-set numbers:
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
 |---|---|---|---|---|---|
@@ -47,7 +63,7 @@ Read plainly: the chosen model gets about 93% of test cases right, and when it l
 
 Selection rate = the share of a group predicted "Bad Risk." Because the per-group
 samples are small (e.g. 55 smokers), demographic-parity ratios (DPR) are reported
-with percentile bootstrap 95% CIs from [evaluate.py](evaluate.py) — the CI, not the
+with percentile bootstrap 95% CIs from [evaluate.py](src/underwriting/evaluate.py) — the CI, not the
 point estimate, is what tells you whether a gap is real.
 
 | Attribute | Baseline selection rate | DPR (95% CI) | Robust? |
@@ -59,7 +75,7 @@ point estimate, is what tells you whether a gap is real.
 **Sex mitigation does not transfer (and the original "win" was leakage).** The
 notebook fit Fairlearn's `ThresholdOptimizer` on the *test* set and scored it on
 that same set, which leaks and reported a gap reduction 4.4 → 3.7 pt (equalized-odds
-ratio 0.0 → 0.52). Redone correctly in [evaluate.py](evaluate.py) — fit on the
+ratio 0.0 → 0.52). Redone correctly in [evaluate.py](src/underwriting/evaluate.py) — fit on the
 **validation** fold, evaluated on the held-out **test** fold — the mitigation leaves
 everything essentially unchanged: gap 4.4 → 4.5 pt, DPR 0.90 → 0.90, equalized-odds
 ratio 0.0 → 0.0, accuracy and F1 flat at 0.933 / 0.924. This is exactly what the wide
@@ -80,26 +96,32 @@ Python, pandas, NumPy, scikit-learn, XGBoost, imbalanced-learn (SMOTE), SHAP, LI
 
 ```
 responsible-ai/
-├── README.md
+├── README.md               # This file (also the Hugging Face Space card)
 ├── MODEL_CARD.md
 ├── requirements.txt
+├── pyproject.toml          # Packaging + pytest config (src layout)
 ├── .gitignore
 ├── LICENSE
-├── app.py                  # Local Gradio launcher
-├── underwriting_demo.py    # Shared UI + inference logic (used by both launchers)
-├── monitoring.py           # Standalone Evidently monitoring script
+├── app.py                  # Gradio entry point (local + Hugging Face Space)
+├── src/
+│   └── underwriting/       # All application/library code
+│       ├── demo.py         #   Shared UI + inference logic
+│       ├── monitoring.py   #   Standalone Evidently monitoring
+│       └── evaluate.py     #   Reproducible fairness + calibration eval
 ├── notebooks/
 │   ├── responsible_ai_underwriting.ipynb
 │   └── models/             # Trained model + preprocessor (committed)
-├── hf_space/               # Self-contained Hugging Face Space
-│   ├── app.py              # Space launcher (imports underwriting_demo.py)
-│   ├── README.md
-│   ├── requirements.txt
-│   └── models/             # Copy of the artifacts the Space serves
-└── reports/                # Evidently HTML reports written by the notebook and monitoring.py
+├── reports/                # Evidently + evaluation artifacts
+└── tests/                  # Offline smoke tests (pytest)
 ```
 
-The notebook is committed with its executed outputs (charts, tables) intact. The trained model and preprocessor are committed under `notebooks/models/` (and `hf_space/models/`) so `app.py` and the Hugging Face Space run without re-executing the notebook. Running the notebook or `monitoring.py` writes the Evidently HTML reports into `reports/`.
+`app.py` stays at the root because the Hugging Face Space uses `app_file: app.py`
+(see the front matter at the top of this file); it adds `src/` to the path and
+loads the shared code from `src/underwriting/`. The notebook is committed with its
+executed outputs intact, and the trained model and preprocessor are committed under
+`notebooks/models/` so `app.py` and the Space run without re-executing the notebook.
+Running the notebook or `src/underwriting/monitoring.py` writes the Evidently HTML
+reports into `reports/`.
 
 ## How to run
 
@@ -120,7 +142,7 @@ The notebook includes:
 
 ### Generate Monitoring Reports
 ```bash
-python monitoring.py
+python src/underwriting/monitoring.py
 ```
 Reads the same insurance dataset, reproduces the train/test feature split, and writes Evidently reports to `reports/`:
 - `monitoring_data_summary.html` — column statistics for train vs test
@@ -131,7 +153,7 @@ The notebook's Section 8 writes the same kind of reports under the names `data_s
 
 ### Reproduce the fairness & calibration evaluation
 ```bash
-python evaluate.py
+python src/underwriting/evaluate.py
 ```
 A deterministic, no-retraining script that loads the committed artifacts,
 reproduces the exact 60/20/20 split, and prints the bootstrap-CI fairness

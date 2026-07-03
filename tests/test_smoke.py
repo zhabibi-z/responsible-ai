@@ -11,10 +11,11 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
-import evaluate
-from underwriting_demo import load_model_artifacts, make_predict_fn, FEATURE_ORDER
+from underwriting import evaluate
+from underwriting.demo import load_model_artifacts, make_predict_fn, FEATURE_ORDER
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _MODEL_DIRS = [os.path.join(_HERE, "..", "notebooks", "models")]

@@ -2,8 +2,10 @@
 """
 Interactive Gradio Application for Responsible AI Predictive Underwriting
 
-Local entry point. The UI and inference logic live in underwriting_demo.py;
-this script only resolves the model path and launches the server.
+Entry point for both local runs and the Hugging Face Space. The UI and
+inference logic live in src/underwriting/demo.py; this script only resolves the
+model path and launches the server. It is kept at the repo root because the
+Hugging Face Space uses `app_file: app.py` (see the README front matter).
 
 Usage:
     python app.py
@@ -17,15 +19,19 @@ Note:
 """
 
 import os
-
-from underwriting_demo import load_model_artifacts, build_demo
+import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-# The notebook runs from notebooks/ and saves artifacts under notebooks/models.
+# Make the src/ package importable without an install step (needed on the
+# Hugging Face Space, which only runs `pip install -r requirements.txt`).
+sys.path.insert(0, os.path.join(_HERE, "src"))
+
+from underwriting.demo import load_model_artifacts, build_demo  # noqa: E402
+
+# The notebook saves the trained artifacts under notebooks/models.
 _MODEL_DIRS = [
     os.path.join(_HERE, "notebooks", "models"),
     os.path.join(_HERE, "models"),
-    os.path.join(_HERE, "..", "models"),
 ]
 
 # Load the real artifacts and build the interface at import time.
