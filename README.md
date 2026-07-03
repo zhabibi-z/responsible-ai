@@ -39,14 +39,7 @@ The notebook runs as an ordered pipeline:
 5. **Test-set evaluation** — all four models re-scored on the held-out test set.
 6. **Fairness audit (Fairlearn)** — per-group metrics across `sex`, `region`, and `smoker`, followed by a `ThresholdOptimizer` mitigation pass on `sex`.
 
-### Project Completion Status
-
-All major sections have been implemented:
-
-- [x] **Model card** — see [MODEL_CARD.md](MODEL_CARD.md)
-- [x] **NIST AI RMF scoring section** — Section 7 in notebook with maturity assessment across core functions and seven trustworthiness characteristics
-- [x] **Monitoring infrastructure** — Evidently AI integration in Section 8; standalone monitoring script: `python src/underwriting/monitoring.py`
-- [x] **System design & Gradio app** — Section 9 in notebook; interactive application: `python app.py`
+Beyond the notebook, the project adds a [model card](MODEL_CARD.md), a NIST AI RMF self-assessment (notebook Section 7), a standalone Evidently monitoring script, a reproducible fairness/calibration evaluation, and a Gradio app.
 
 ## Key results
 
@@ -177,10 +170,10 @@ Run the smoke tests with `pytest -q`.
 python app.py
 ```
 Opens Gradio interface at `http://localhost:7860` with:
-- **Make Prediction** — Input applicant features, get risk score + fairness context
-- **Model Information** — Performance metrics, fairness analysis, limitations
-- **Feature Guide** — Interpretation of each input feature
-- **System Architecture** — Technical design, deployment, governance
+- **Make Prediction** — enter applicant features, get a risk class, calibrated probabilities, and fairness context
+- **Model Information** — performance, calibration evidence, fairness with CIs, and limitations
+- **Feature Guide** — how each input is interpreted
+- **System Design** — the actual pipeline, tech stack, and NIST RMF governance (with an explicit "out of scope for a demo" list)
 
 The default configuration uses `DATA_SOURCE="URL"`, which pulls the dataset from a public URL and needs **no Kaggle credentials**. To use the Kaggle source instead, set `DATA_SOURCE="KAGGLE"` and provide `KAGGLE_USERNAME` / `KAGGLE_KEY` (the notebook reads them from Colab secrets, not from a committed file).
 
