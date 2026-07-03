@@ -1,4 +1,7 @@
-# Compatible with Python 3.14+
+# Pinned, concrete install list (Python 3.14+) used for reproducible setups and
+# by the Hugging Face Space. pyproject.toml declares the same dependencies
+# abstractly and splits them into runtime vs. the optional `analysis`/`dev`
+# extras; this file is the full superset.
 numpy>=2.4
 pandas>=3.0
 # Pinned: the committed model/preprocessor pickles were trained on 1.9.0;

@@ -10,9 +10,31 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 
-# Runtime/dev dependencies are pinned in requirements.txt (also what the
-# Hugging Face Space installs). Install the package for development with
-# `pip install -e .` after `pip install -r requirements.txt`.
+# Abstract dependency declaration (PEP 621). requirements.txt holds the pinned,
+# concrete versions used for reproducible installs and by the Hugging Face Space.
+# Runtime = what the served app (src/underwriting/demo.py) needs to score inputs.
+dependencies = [
+    "gradio>=4.20",
+    "joblib>=1.4",
+    "numpy>=2.4",
+    "pandas>=3.0",
+    "scikit-learn==1.9.0",  # must match the version that trained the pickles
+    "xgboost>=2.1",
+]
+
+[project.optional-dependencies]
+# Needed to run the notebook, monitoring.py, and evaluate.py (not the served app).
+analysis = [
+    "shap>=0.46",
+    "lime>=0.2.0",
+    "fairlearn>=0.11",
+    "evidently>=0.4",
+    "imbalanced-learn>=0.12",
+    "matplotlib>=3.9",
+    "seaborn>=0.13",
+    "kaggle>=1.6",
+]
+dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
