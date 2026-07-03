@@ -26,6 +26,7 @@ A notebook that builds an insurance risk-classification model and then audits it
 
 - [Problem](#problem)
 - [What this project does](#what-this-project-does)
+- [Architecture](#architecture)
 - [Key results](#key-results)
 - [Tech stack](#tech-stack)
 - [Repository structure](#repository-structure)
@@ -51,6 +52,24 @@ The notebook runs as an ordered pipeline:
 6. **Fairness audit (Fairlearn)** — per-group metrics across `sex`, `region`, and `smoker`, followed by a `ThresholdOptimizer` mitigation pass on `sex`.
 
 Beyond the notebook, the project adds a [model card](MODEL_CARD.md), a NIST AI RMF self-assessment (notebook Section 7), a standalone Evidently monitoring script, a reproducible fairness/calibration evaluation, and a Gradio app.
+
+## Architecture
+
+```text
+ Insurance data ─► Preprocess ─► Train & select ─────────► Serve (Gradio app)
+ (CSV / Kaggle)    scale +       LogReg, Tree, XGBoost,
+                   SMOTE         Calibrated XGBoost (selected)
+                                        │
+                                        ├─► Explainability — SHAP, LIME, LR coefficients
+                                        ├─► Fairness audit — Fairlearn + bootstrap CIs
+                                        └─► Monitoring     — Evidently drift reports
+```
+
+Preprocessing, training, and explainability run in the notebook; the fairness
+audit ([evaluate.py](src/underwriting/evaluate.py)), monitoring
+([monitoring.py](src/underwriting/monitoring.py)), and the app
+([app.py](app.py)) also run as standalone, reproducible scripts against the
+committed model.
 
 ## Key results
 
