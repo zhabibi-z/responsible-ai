@@ -16,6 +16,10 @@ license: mit
 
 # Responsible AI for Predictive Underwriting
 
+[![CI](https://github.com/zhabibi-z/responsible-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/zhabibi-z/responsible-ai/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 A notebook that builds an insurance risk-classification model and then audits it for transparency and fairness, rather than stopping at accuracy.
 
 ## Problem
@@ -98,10 +102,9 @@ Python, pandas, NumPy, scikit-learn, XGBoost, imbalanced-learn (SMOTE), SHAP, LI
 responsible-ai/
 ├── README.md               # This file (also the Hugging Face Space card)
 ├── MODEL_CARD.md
-├── requirements.txt
-├── pyproject.toml          # Packaging + pytest config (src layout)
-├── .gitignore
-├── LICENSE
+├── pyproject.toml          # Packaging + dependency declaration + pytest config
+├── requirements.txt        # Pinned, concrete install (used by the HF Space)
+├── LICENSE  .gitignore
 ├── app.py                  # Gradio entry point (local + Hugging Face Space)
 ├── src/
 │   └── underwriting/       # All application/library code
@@ -110,26 +113,34 @@ responsible-ai/
 │       └── evaluate.py     #   Reproducible fairness + calibration eval
 ├── notebooks/
 │   ├── responsible_ai_underwriting.ipynb
-│   └── models/             # Trained model + preprocessor (committed)
-├── reports/                # Evidently + evaluation artifacts
-└── tests/                  # Offline smoke tests (pytest)
+│   └── models/             # Trained model + preprocessor (~280 KB, committed)
+├── reports/                # Curated diagram (committed); HTML/JSON regenerated
+├── tests/                  # Offline smoke tests (pytest)
+└── .github/workflows/      # CI: runs the tests on every push
 ```
 
-`app.py` stays at the root because the Hugging Face Space uses `app_file: app.py`
-(see the front matter at the top of this file); it adds `src/` to the path and
-loads the shared code from `src/underwriting/`. The notebook is committed with its
-executed outputs intact, and the trained model and preprocessor are committed under
-`notebooks/models/` so `app.py` and the Space run without re-executing the notebook.
-Running the notebook or `src/underwriting/monitoring.py` writes the Evidently HTML
-reports into `reports/`.
+**Design notes for reviewers.** The code follows the [PyPA `src` layout](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/)
+so imports resolve against the installed package, not the working directory.
+`app.py` sits at the root only because the Hugging Face Space requires
+`app_file: app.py` (front matter above); it adds `src/` to the path and loads the
+shared code from `src/underwriting/`. The trained models (~280 KB total) are
+committed deliberately so the app and Space run without retraining — well below the
+size where Git LFS is warranted — while the multi-MB Evidently HTML reports are
+*generated, not committed* (regenerate with the scripts below).
 
 ## How to run
 
-### Main Notebook (Complete Analysis)
+### Setup
 ```bash
 git clone https://github.com/zhabibi-z/responsible-ai.git
 cd responsible-ai
-pip install -r requirements.txt
+pip install -r requirements.txt          # pinned, reproducible (what the HF Space uses)
+# or, for development against the package metadata:
+#   pip install -e ".[analysis,dev]"     # runtime + notebook/eval deps + pytest
+```
+
+### Main Notebook (Complete Analysis)
+```bash
 jupyter notebook notebooks/responsible_ai_underwriting.ipynb
 ```
 
