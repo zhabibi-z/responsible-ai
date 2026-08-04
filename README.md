@@ -42,7 +42,7 @@ The data is the public medical-cost insurance dataset (1,338 records, 1,337 afte
 
 ## What this project does
 
-The notebook runs as an ordered pipeline:
+The notebook runs as an ordered pipeline:-
 
 1. **Data ingestion** — loads `insurance.csv` from a public URL by default, with an optional Kaggle path. A 60/20/20 train/validation/test split is used.
 2. **EDA and preprocessing** — schema validation, a `ColumnTransformer` for scaling and one-hot encoding, and SMOTE to address class imbalance in the training fold.
